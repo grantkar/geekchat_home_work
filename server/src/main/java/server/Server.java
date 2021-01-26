@@ -47,10 +47,10 @@ public class Server {
     }
     public void privMassege(ClientHandler clientHandler, String nick,  String privMsg){
         String message = String.format("[ %s ]: %s", clientHandler.getNickname(), privMsg);
-        clientHandler.sendMsg(message);
+        clientHandler.sendMsg(message);        // Отправка приватного сообщения себе
         for (ClientHandler client : clients) {
             if (client.getNickname().equals(nick)){
-                client.sendMsg(message);
+                client.sendMsg(message);      // Отправка приватного сообщения адрессату
             }
 
         }

@@ -57,7 +57,7 @@ public class ClientHandler {
                     //цикл работы
                     while (true) {
                         String str = in.readUTF();
-                        String [] privMsg = str.split(" ", 3);
+                        String [] privMsg = str.split(" ", 3); //Деление строки на 3 части
 
                         if (str.equals(Command.END)) {
                             sendMsg(Command.END);
@@ -65,8 +65,8 @@ public class ClientHandler {
                             break;
                         } else
 
-                        if (privMsg[0].equals("/w")){
-                            server.privMassege(this,privMsg[1], privMsg[2]);
+                        if (privMsg[0].equals("/w")){         // Сравниваем символ на приватность
+                            server.privMassege(this,privMsg[1], privMsg[2]);  // Отправляем в сервер Nick Адрессата и наше сообщение
                         } else
 
                         server.broadcastMsg(this, str);
