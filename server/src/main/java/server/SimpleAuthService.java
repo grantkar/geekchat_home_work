@@ -7,7 +7,7 @@ public class SimpleAuthService implements AuthService {
     private class UserData {
         String login;
         String password;
-        private String nickname;
+        String nickname;
 
         public UserData(String login, String password, String nickname) {
             this.login = login;
@@ -15,8 +15,6 @@ public class SimpleAuthService implements AuthService {
             this.nickname = nickname;
         }
     }
-
-
 
     private List<UserData> users;
 
@@ -30,8 +28,6 @@ public class SimpleAuthService implements AuthService {
         }
     }
 
-
-
     @Override
     public String getNicknameByLoginAndPassword(String login, String password) {
         for (UserData user : users) {
@@ -42,5 +38,14 @@ public class SimpleAuthService implements AuthService {
         return null;
     }
 
-
+    @Override
+    public boolean registration(String login, String password, String nickname) {
+        for (UserData user : users) {
+            if(user.login.equals(login) || user.nickname.equals(nickname)){
+                return false;
+            }
+        }
+        users.add(new UserData(login, password, nickname));
+        return true;
+    }
 }
