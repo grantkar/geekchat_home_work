@@ -14,6 +14,9 @@ public class Server {
     private final int PORT = 8189;
     private List<ClientHandler> clients;
     private AuthService authService;
+    private DataBase dataBaseAuth;
+
+
 
     public Server() {
         clients = new CopyOnWriteArrayList<>();
@@ -74,6 +77,12 @@ public class Server {
     public AuthService getAuthService() {
         return authService;
     }
+
+    public DataBase getDataBaseAuth() {
+        return dataBaseAuth;
+    }
+
+
 
     public boolean isLoginAuthenticated(String login) {
         for (ClientHandler c : clients) {
