@@ -26,26 +26,15 @@ public class ClientHandler {
 
             new Thread(() -> {
                 try {
-
+                    socket.setSoTimeout(120000);
                     //цикл аутентификации
-
-                    socket.setSoTimeout(120000);   //  Включаем таймер на выброс ошибки SocketTimeoutException в случае бездействия соккета 120сек
                     while (true) {
                         String str = in.readUTF();
 
                         if (str.startsWith(Command.AUTH)) {
                             String[] token = str.split("\\s");
-                           // String newNick = server.getAuthService()
-                           //         .getNicknameByLoginAndPassword(token[1], token[2]);
-
-                            /*
-                            Отправляю в базу данных на SELECT никнейма по ПАРАМЕТРАМ логин и пароль в полной
-                             аналогии с таким же методом который мы писали выше, и так же выскакивает ошибка
-                             EOFException (client.Controller.lambda$connect$3(Controller.java:103) в in.readUTF() в
-                             Controllere
-                             */
-                             String newNick = server.getDataBaseAuth().getNicknameByLoginAndPassword(token[1], token[2]);
-
+                            String newNick = server.getAuthService()
+                                    .getNicknameByLoginAndPassword(token[1], token[2]);
                             login = token[1];
                             if (newNick != null) {
                                 if (!server.isLoginAuthenticated(login)) {
@@ -53,6 +42,10 @@ public class ClientHandler {
                                     sendMsg(Command.AUTH_OK + " " + nickname);
                                     server.subscribe(this);
                                     System.out.println("client " + nickname + " connected " + socket.getRemoteSocketAddress());
+                                    socket.setSoTimeout(0);
+                                    //==============//
+                                    sendMsg(SQLHandler.getMessageForNick(nickname));
+                                    //==============//
                                     break;
                                 } else {
                                     sendMsg("С этим логином уже авторизовались");
@@ -72,13 +65,7 @@ public class ClientHandler {
                             if (token.length < 4) {
                                 continue;
                             }
-                            //boolean isRegistered = server.getAuthService().registration(token[1],token[2],token[3]);
-
-                         /*    Отправляю в метод регистрации поделенное сообщение, он должен добавить несуществующую запись
-                             в базу но получаю ошибку EOFException (client.Controller.lambda$connect$3(Controller.java:103) in.readUTF())
-                             уже всю голову сломал над этим никак не получается сделать, в методе получения ника из данных пороля
-                            и логина выскакивае та же самая ошибка, хотя когда команды в базу без привязки к чату делаю все работает   */
-                            boolean isRegistered = server.getDataBaseAuth().registration(token[1],token[2],token[3]);
+                            boolean isRegistered = server.getAuthService().registration(token[1], token[2], token[3]);
                             if (isRegistered) {
                                 sendMsg(Command.REG_OK);
                             } else {
@@ -88,9 +75,7 @@ public class ClientHandler {
                     }
 
                     //цикл работы
-                    socket.setSoTimeout(0);  //  Обнуляем таймер, если пройденна аутентификация
                     while (true) {
-
                         String str = in.readUTF();
 
                         if (str.startsWith("/")) {
@@ -106,20 +91,35 @@ public class ClientHandler {
                                 server.privateMsg(this, token[1], token[2]);
                             }
 
+                            //==============//
+                            if (str.startsWith("/chnick ")) {
+                                String[] token = str.split("\\s+", 2);
+                                if (token.length < 2) {
+                                    continue;
+                                }
+                                if (token[1].contains(" ")) {
+                                    sendMsg("Ник не может содержать пробелов");
+                                    continue;
+                                }
+                                if (server.getAuthService().changeNick(this.nickname, token[1])) {
+                                    sendMsg("/yournickis " + token[1]);
+                                    sendMsg("Ваш ник изменен на " + token[1]);
+                                    this.nickname = token[1];
+                                    server.broadcastClientList();
+                                } else {
+                                    sendMsg("Не удалось изменить ник. Ник " + token[1] + " уже существует");
+                                }
+                            }
+                            //==============//
                         } else {
                             server.broadcastMsg(this, str);
                         }
                     }
-
+                } catch (SocketTimeoutException e) {
+                    sendMsg(Command.END);
                 } catch (RuntimeException e) {
                     System.out.println(e.getMessage());
-                } catch (SocketTimeoutException e){      // Ловим SocketTimeoutException и отправляем сообщение на закрытие соккета
-                       sendMsg(Command.END);
                 } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 } finally {
                     server.unsubscribe(this);

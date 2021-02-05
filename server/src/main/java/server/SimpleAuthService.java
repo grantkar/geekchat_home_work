@@ -18,7 +18,6 @@ public class SimpleAuthService implements AuthService {
     }
 
     private List<UserData> users;
-    BaseDataUsers baseDataUsers;
 
 
 
@@ -34,6 +33,7 @@ public class SimpleAuthService implements AuthService {
 
 
     }
+
 
     @Override
     public String getNicknameByLoginAndPassword(String login, String password) {
@@ -54,5 +54,10 @@ public class SimpleAuthService implements AuthService {
         }
         users.add(new UserData(login, password, nickname));
         return true;
+    }
+
+    @Override
+    public boolean changeNick(String oldNickname, String newNickname) {
+        return false;
     }
 }
