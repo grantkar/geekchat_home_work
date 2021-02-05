@@ -1,5 +1,6 @@
 package server;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,15 +19,21 @@ public class SimpleAuthService implements AuthService {
 
     private List<UserData> users;
 
+
+
+    public void setUsers(List<UserData> users) {
+        this.users = users;
+    }
+
     public SimpleAuthService() {
         users = new ArrayList<>();
         users.add(new UserData("qwe", "qwe", "qwe"));
         users.add(new UserData("asd", "asd", "asd"));
         users.add(new UserData("zxc", "zxc", "zxc"));
-        for (int i = 1; i < 10; i++) {
-            users.add(new UserData("user" + i, "pass" + i, "nick" + i));
-        }
+
+
     }
+
 
     @Override
     public String getNicknameByLoginAndPassword(String login, String password) {
@@ -47,5 +54,10 @@ public class SimpleAuthService implements AuthService {
         }
         users.add(new UserData(login, password, nickname));
         return true;
+    }
+
+    @Override
+    public boolean changeNick(String oldNickname, String newNickname) {
+        return false;
     }
 }
