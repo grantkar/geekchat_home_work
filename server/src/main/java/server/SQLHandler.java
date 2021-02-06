@@ -1,5 +1,7 @@
 package server;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.*;
 
 public class SQLHandler {
@@ -10,6 +12,8 @@ public class SQLHandler {
 
     private static PreparedStatement psAddMessage;
     private static PreparedStatement psGetMessageForNick;
+
+
 
     public static boolean connect() {
         try {
@@ -59,6 +63,7 @@ public class SQLHandler {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return nick;
     }
 
@@ -116,6 +121,7 @@ public class SQLHandler {
     public static String getMessageForNick(String nick) {
         StringBuilder sb = new StringBuilder();
 
+
         try {
             psGetMessageForNick.setString(1, nick);
             psGetMessageForNick.setString(2, nick);
@@ -137,6 +143,7 @@ public class SQLHandler {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
 
         return sb.toString();
     }

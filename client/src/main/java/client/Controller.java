@@ -20,11 +20,11 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
@@ -145,7 +145,7 @@ public class Controller implements Initializable {
                                 });
                             }
                             //==============//
-                            if (str.startsWith("/yournickis ")) {
+                            if (str.startsWith(Command.YOU_NICK)) {
                                 nickname = str.split(" ")[1];
                                 setTitle(nickname);
                             }
@@ -241,6 +241,22 @@ public class Controller implements Initializable {
             e.printStackTrace();
         }
     }
+                        /* Метод создания файла с никнеймом пользователя
+                           */
+    public void createFileHistori(String nickname){
+        File file = new File("history_"+ nickname + ".txt");
+        try {
+            file.createNewFile();
+            FileInputStream in = new FileInputStream(file);
+            PrintWriter writer = new PrintWriter(file);
+            in.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     public void tryToReg(String login, String password, String nickname) {
         if (socket == null || socket.isClosed()) {
