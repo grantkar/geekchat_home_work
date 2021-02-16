@@ -2,12 +2,13 @@ package server;
 
 import commands.Command;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.List;
 
 public class ClientHandler {
     private Server server;
@@ -28,6 +29,7 @@ public class ClientHandler {
                 try {
                     socket.setSoTimeout(120000);
                     //цикл аутентификации
+
                     while (true) {
                         String str = in.readUTF();
 
@@ -43,8 +45,37 @@ public class ClientHandler {
                                     server.subscribe(this);
                                     System.out.println("client " + nickname + " connected " + socket.getRemoteSocketAddress());
                                     socket.setSoTimeout(0);
+
+
+
+                                        // создаем файл с названием history_+ ник пользователя в формате txt
+                                        File file = new File("fileHistory/histori_"+ nickname + ".txt");
+                                        file.createNewFile();
+
+                                        // Создаем экземпляр класса FileWriter Записываем в него всю историю
+                                        // которая пришла из базы данных
+                                        FileWriter writer = new FileWriter(file,false);
+                                        writer.write(SQLHandler.getMessageForNick(nickname));
+                                        writer.close();
+
+                                        // Считываем содержимое файла в лист history
+
+                                        List<String> history = Files.readAllLines(Paths.get(file.getName()));
+                                        if (history.size()-100<0){  // если в листе меньше 100 строк то отправляем каждую стороку клиенту
+                                           for (String s : history) {
+                                               sendMsg(s);
+                                           }
+                                        } else {     // если больше 100, то из общего количество вычитаем 100, и начиная с этой строки
+                                                     // отправляем оставшиеся 100 строк клиенту
+                                            int label = history.size() - 100;
+                                            for (int i = label; i < history.size(); i++) {
+                                                sendMsg(history.get(i));
+                                            }
+                                        }
+
+
                                     //==============//
-                                    sendMsg(SQLHandler.getMessageForNick(nickname));
+                                   // sendMsg(SQLHandler.getMessageForNick(nickname));
                                     //==============//
                                     break;
                                 } else {
@@ -74,6 +105,7 @@ public class ClientHandler {
                         }
                     }
 
+
                     //цикл работы
                     while (true) {
                         String str = in.readUTF();
@@ -92,7 +124,7 @@ public class ClientHandler {
                             }
 
                             //==============//
-                            if (str.startsWith("/chnick ")) {
+                            if (str.startsWith(Command.CHNICK)) {
                                 String[] token = str.split("\\s+", 2);
                                 if (token.length < 2) {
                                     continue;
@@ -102,7 +134,7 @@ public class ClientHandler {
                                     continue;
                                 }
                                 if (server.getAuthService().changeNick(this.nickname, token[1])) {
-                                    sendMsg("/yournickis " + token[1]);
+                                    sendMsg(Command.YOU_NICK + token[1]);
                                     sendMsg("Ваш ник изменен на " + token[1]);
                                     this.nickname = token[1];
                                     server.broadcastClientList();
